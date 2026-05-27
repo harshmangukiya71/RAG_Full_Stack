@@ -10,9 +10,9 @@ This project enables users to upload and query custom documents such as PDFs, no
 
 Retrieval-Augmented Generation (RAG) combines the power of:
 
-- **Information Retrieval**
-- **Vector Search**
-- **Large Language Models (LLMs)**
+- Information Retrieval
+- Vector Search
+- Large Language Models (LLMs)
 
 The goal of this project is to build an intelligent document-based question-answering system where users can interact with their own knowledge base.
 
@@ -42,7 +42,9 @@ This approach significantly improves:
 - Streamlit/Frontend UI integration
 - Modular and scalable architecture
 - Conversational retrieval pipeline
-- Custom knowledge base support
+- Memory-aware responses
+- Evaluation pipeline for RAG quality
+- Document summarization support
 - Docker support
 - Environment-based configuration
 - Extensible pipeline for future improvements
@@ -165,7 +167,8 @@ The language model generates:
 - ChromaDB
 
 ## Frontend
-- Streamlit / React Frontend
+- Streamlit
+- React / Next.js
 
 ## Deployment & DevOps
 - Docker
@@ -179,26 +182,43 @@ The language model generates:
 RAG/
 │
 ├── backend/
+│   │
 │   ├── app/
-│   │   ├── ingestion.py
+│   │   ├── __init__.py
+│   │   ├── cache.py
+│   │   ├── config.py
 │   │   ├── embeddings.py
-│   │   ├── retrieval.py
-│   │   ├── generation.py
-│   │   ├── vectorstore.py
-│   │   ├── pipeline.py
-│   │   ├── models.py
-│   │   ├── memory.py
 │   │   ├── evaluation.py
-│   │   └── main.py
+│   │   ├── generation.py
+│   │   ├── ingestion.py
+│   │   ├── main.py
+│   │   ├── memory.py
+│   │   ├── models.py
+│   │   ├── pipeline.py
+│   │   ├── retrieval.py
+│   │   ├── summarizer.py
+│   │   └── vectorstore.py
 │   │
 │   ├── data/
 │   ├── tests/
+│   ├── .env
+│   ├── .env.example
+│   ├── DESIGN.md
+│   ├── Dockerfile
+│   ├── fix_data.py
+│   ├── generate_sample_pdfs.py
 │   ├── requirements.txt
-│   └── Dockerfile
+│   └── setup_and_run.ps1
 │
 ├── frontend/
 │   ├── src/
-│   └── Dockerfile
+│   ├── .env.local
+│   ├── Dockerfile
+│   ├── next-env.d.ts
+│   ├── next.config.mjs
+│   ├── package.json
+│   ├── package-lock.json
+│   └── tsconfig.json
 │
 ├── docker-compose.yml
 ├── README.md
@@ -278,14 +298,6 @@ http://localhost:8000
 
 ## Run Frontend
 
-### Streamlit
-```bash
-streamlit run app.py
-```
-
-OR
-
-### React Frontend
 ```bash
 cd frontend
 npm install
@@ -324,6 +336,7 @@ docker-compose up --build
 # Example Query Flow
 
 ## User Question
+
 ```text
 What are the key responsibilities mentioned in the contract?
 ```
