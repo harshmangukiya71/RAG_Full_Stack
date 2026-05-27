@@ -1,135 +1,409 @@
-# LexRAG — Production-Grade Legal Document RAG Pipeline
+# RAG Full Stack AI Assistant
 
-> **Stack**: FastAPI · ChromaDB · BGE-large · BM25 + Dense Hybrid · Cross-Encoder Re-ranking · NVIDIA NIM (Llama 3.1 70B) · Next.js 14
+A production-ready **Retrieval-Augmented Generation (RAG)** system built using **Python, LangChain, OpenAI API, Hugging Face Embeddings, FAISS/ChromaDB, FastAPI, and Streamlit**.
 
-## Quick Start
+This project enables users to upload and query custom documents such as PDFs, notes, reports, or text files. Instead of relying only on a language model’s pre-trained knowledge, the system retrieves relevant information from user-provided documents and uses it to generate accurate, grounded, and context-aware responses.
 
-### 1. Set your NVIDIA API key
-```bash
-cp .env.example .env
-# Edit .env and replace nvapi-your-key-here with your actual key
+---
+
+# Project Overview
+
+Retrieval-Augmented Generation (RAG) combines the power of:
+
+- **Information Retrieval**
+- **Vector Search**
+- **Large Language Models (LLMs)**
+
+The goal of this project is to build an intelligent document-based question-answering system where users can interact with their own knowledge base.
+
+When a user asks a question:
+
+1. The system searches through indexed documents.
+2. Retrieves the most relevant text chunks.
+3. Sends those chunks to the language model.
+4. Generates a contextual and accurate answer.
+
+This approach significantly improves:
+- factual accuracy
+- hallucination reduction
+- domain-specific answering
+- explainability
+
+---
+
+# Features
+
+- Upload and process PDFs and text documents
+- Semantic text chunking
+- Embedding generation using Hugging Face/OpenAI
+- Vector similarity search using FAISS/ChromaDB
+- Context-aware answer generation
+- FastAPI backend APIs
+- Streamlit/Frontend UI integration
+- Modular and scalable architecture
+- Conversational retrieval pipeline
+- Custom knowledge base support
+- Docker support
+- Environment-based configuration
+- Extensible pipeline for future improvements
+
+---
+
+# How RAG Works
+
+## 1. Document Loading
+The system loads external documents such as:
+- PDFs
+- text files
+- notes
+- reports
+- knowledge base documents
+
+---
+
+## 2. Text Splitting
+Large documents are split into smaller chunks to:
+- improve retrieval quality
+- reduce token size
+- preserve semantic meaning
+
+---
+
+## 3. Embedding Generation
+Each chunk is converted into a dense vector representation using:
+- Hugging Face Embeddings
+- OpenAI Embeddings
+
+Embeddings capture semantic meaning instead of simple keywords.
+
+---
+
+## 4. Vector Storage
+Embeddings are stored inside:
+- FAISS
+- ChromaDB
+
+This allows efficient similarity search over large document collections.
+
+---
+
+## 5. Query Processing
+When a user asks a question:
+- the query is converted into an embedding vector
+- semantic similarity search is performed
+
+---
+
+## 6. Retrieval
+The most relevant chunks are retrieved based on vector similarity.
+
+---
+
+## 7. Answer Generation
+The retrieved chunks are passed to the language model as context.
+
+The language model generates:
+- grounded
+- contextual
+- accurate responses
+
+---
+
+# Project Architecture
+
+```text
+                ┌──────────────────┐
+                │   User Query     │
+                └────────┬─────────┘
+                         │
+                         ▼
+                ┌──────────────────┐
+                │ Query Embedding  │
+                └────────┬─────────┘
+                         │
+                         ▼
+                ┌──────────────────┐
+                │ Vector Database  │
+                │ (FAISS/ChromaDB) │
+                └────────┬─────────┘
+                         │
+             Retrieve Relevant Chunks
+                         │
+                         ▼
+                ┌──────────────────┐
+                │ Retrieved Context│
+                └────────┬─────────┘
+                         │
+                         ▼
+                ┌──────────────────┐
+                │ Language Model   │
+                │ (OpenAI/LLM)     │
+                └────────┬─────────┘
+                         │
+                         ▼
+                ┌──────────────────┐
+                │ Final Response   │
+                └──────────────────┘
 ```
 
-### 2. Run locally without Docker
+---
 
-**Backend:**
+# Tech Stack
+
+## Backend
+- Python
+- FastAPI
+- LangChain
+
+## AI / NLP
+- OpenAI API
+- Hugging Face Transformers
+- Sentence Transformers
+
+## Vector Database
+- FAISS
+- ChromaDB
+
+## Frontend
+- Streamlit / React Frontend
+
+## Deployment & DevOps
+- Docker
+- Docker Compose
+
+---
+
+# Folder Structure
+
+```text
+RAG/
+│
+├── backend/
+│   ├── app/
+│   │   ├── ingestion.py
+│   │   ├── embeddings.py
+│   │   ├── retrieval.py
+│   │   ├── generation.py
+│   │   ├── vectorstore.py
+│   │   ├── pipeline.py
+│   │   ├── models.py
+│   │   ├── memory.py
+│   │   ├── evaluation.py
+│   │   └── main.py
+│   │
+│   ├── data/
+│   ├── tests/
+│   ├── requirements.txt
+│   └── Dockerfile
+│
+├── frontend/
+│   ├── src/
+│   └── Dockerfile
+│
+├── docker-compose.yml
+├── README.md
+└── .gitignore
+```
+
+---
+
+# Installation Steps
+
+## 1. Clone Repository
+
+```bash
+git clone https://github.com/your-username/rag-project.git
+cd rag-project
+```
+
+---
+
+## 2. Create Virtual Environment
+
+### Windows
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+```
+
+### Linux / Mac
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+---
+
+## 3. Install Dependencies
+
+```bash
+pip install -r backend/requirements.txt
+```
+
+---
+
+# Environment Variables
+
+Create a `.env` file inside the backend directory.
+
+```env
+OPENAI_API_KEY=your_openai_api_key
+
+EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+
+VECTOR_DB=chroma
+
+CHROMA_DB_DIR=./chroma_db
+
+MODEL_NAME=gpt-4o-mini
+```
+
+---
+
+# How to Run the Project
+
+## Run Backend
+
 ```bash
 cd backend
-pip install -r requirements.txt
-
-# Copy and fill in your API key
-cp .env.example .env
-
-# Generate the 3 sample PDFs
-python generate_sample_pdfs.py
-
-# Start the API server
-uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --reload
 ```
 
-**Frontend:**
+Backend server:
+```text
+http://localhost:8000
+```
+
+---
+
+## Run Frontend
+
+### Streamlit
+```bash
+streamlit run app.py
+```
+
+OR
+
+### React Frontend
 ```bash
 cd frontend
 npm install
-npm run dev   # → http://localhost:3000
+npm run dev
 ```
 
-### 3. Run with Docker Compose
+Frontend server:
+```text
+http://localhost:3000
+```
+
+---
+
+# Docker Setup
+
+## Build and Run
+
 ```bash
-cp .env.example .env   # fill in NVIDIA_API_KEY
 docker-compose up --build
-# Frontend: http://localhost:3000
-# Backend API: http://localhost:8000
-# API Docs: http://localhost:8000/docs
 ```
 
 ---
 
-## Run the Evaluation Harness
+# Usage Instructions
 
-```bash
-cd backend
+1. Upload PDF or document
+2. Documents are processed and chunked
+3. Embeddings are generated
+4. Chunks are stored in vector database
+5. Ask questions through the UI/API
+6. System retrieves relevant chunks
+7. LLM generates final contextual response
 
-# Option A: via Python (skip ingestion if already done)
-python -m app.evaluation --skip-ingest
+---
 
-# Option B: via API (click "Run Evaluation" button in UI, or:)
-curl -X POST http://localhost:8000/evaluate | python -m json.tool
-```
+# Example Query Flow
 
-Expected output:
-```
-============================================================
-EVALUATION REPORT — Precision@3
-============================================================
-  ✓ What is the notice period in the NDA with Vendor X?
-  ✓ How long do the confidentiality obligations last...
-  ✓ What is the limitation of liability cap in the NDA...
-  ...
-------------------------------------------------------------
-  Total questions : 10
-  Hits            : 9
-  Precision@3     : 90.0%
-============================================================
+## User Question
+```text
+What are the key responsibilities mentioned in the contract?
 ```
 
 ---
 
-## API Reference
+## System Flow
 
-| Endpoint | Method | Description |
-|---|---|---|
-| `GET /health` | GET | Health check + document list |
-| `POST /query` | POST | Query with `{"question": "..."}` |
-| `POST /ingest` | POST | Upload PDF (multipart/form-data) |
-| `GET /documents` | GET | List all ingested documents |
-| `DELETE /documents/{name}` | DELETE | Remove a document |
-| `POST /evaluate` | POST | Run Precision@3 harness |
-| `GET /docs` | GET | Interactive Swagger UI |
+1. Query converted to embedding
+2. Similar chunks retrieved from vector DB
+3. Retrieved context passed to LLM
+4. Final answer generated
 
 ---
 
-## Architecture
+## Example Response
 
-See [DESIGN.md](backend/DESIGN.md) for full trade-off reasoning on:
-- Chunking strategy (semantic + legal-aware)
-- Embedding model (BGE-large vs OpenAI)
-- Vector store (ChromaDB vs FAISS vs Pinecone)
-- Retrieval (BM25 + Dense → RRF → Cross-Encoder)
-- Hallucination mitigation (4 layers)
-- Scaling to 50,000 documents
+```text
+The contract specifies responsibilities related to project delivery,
+quality assurance, reporting, and compliance requirements.
+```
 
 ---
 
-## Project Structure
+# Benefits of Using RAG
 
-```
-rag-legal/
-├── backend/
-│   ├── app/
-│   │   ├── config.py        # Settings (pydantic-settings)
-│   │   ├── models.py        # Pydantic schemas
-│   │   ├── ingestion.py     # PDF parsing + semantic chunking
-│   │   ├── embeddings.py    # BGE-large embedding singleton
-│   │   ├── vectorstore.py   # ChromaDB wrapper
-│   │   ├── retrieval.py     # BM25 + Dense → RRF → Cross-encoder
-│   │   ├── generation.py    # NVIDIA NIM + hallucination mitigation
-│   │   ├── pipeline.py      # RAGPipeline (main interface)
-│   │   ├── evaluation.py    # Precision@3 harness
-│   │   └── main.py          # FastAPI application
-│   ├── data/pdfs/           # Stored PDFs
-│   ├── data/chroma_db/      # Persistent vector store
-│   ├── tests/
-│   │   └── eval_qa_pairs.json
-│   ├── generate_sample_pdfs.py
-│   ├── DESIGN.md
-│   ├── requirements.txt
-│   └── Dockerfile
-├── frontend/
-│   └── src/
-│       ├── app/page.tsx     # Main chat UI
-│       ├── components/      # UploadZone, SourceCard, ConfidenceBadge, EvalModal
-│       └── lib/api.ts       # Typed API client
-├── docker-compose.yml
-└── README.md
-```
+- Reduces hallucinations
+- Uses real-time/custom data
+- Improves factual accuracy
+- Supports domain-specific applications
+- Scales across large document collections
+- Better explainability
+- Personalized AI assistant capability
+
+---
+
+# Limitations
+
+- Retrieval quality depends on chunking strategy
+- Large vector databases may require optimization
+- Embedding quality impacts accuracy
+- LLM inference can be expensive
+- Context window limitations exist
+
+---
+
+# Future Improvements
+
+- Hybrid search (BM25 + vector search)
+- Multi-modal RAG
+- OCR support for scanned PDFs
+- Streaming responses
+- Authentication system
+- Cloud deployment (AWS/Azure/GCP)
+- Kubernetes deployment
+- Real-time document indexing
+- Citation generation
+- Conversational memory optimization
+- Fine-tuned domain-specific models
+
+---
+
+# Conclusion
+
+This project demonstrates how Retrieval-Augmented Generation (RAG) can significantly improve the quality and reliability of AI-generated responses by integrating external knowledge retrieval with powerful language models.
+
+The system is modular, scalable, and production-oriented, making it suitable for:
+- AI assistants
+- enterprise knowledge bases
+- document search systems
+- research assistants
+- customer support automation
+- internal company tools
+
+By combining vector databases, embeddings, retrieval pipelines, and LLMs, this project provides a strong foundation for building advanced AI-powered applications.
+
+---
+
+# Author
+
+Harsh Mangukiya
+
+GitHub: https://github.com/harshmangukiya71/RAG_Full_Stack
