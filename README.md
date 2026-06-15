@@ -1,302 +1,310 @@
-# RAG Full Stack AI Assistant
+# DocRAG - Hybrid Agentic RAG Assistant
 
-A production-ready **Retrieval-Augmented Generation (RAG)** system built using **Python, LangChain, OpenAI API, Hugging Face Embeddings, FAISS/ChromaDB, FastAPI, and Streamlit**.
-
-This project enables users to upload and query custom documents such as PDFs, notes, reports, or text files. Instead of relying only on a language model’s pre-trained knowledge, the system retrieves relevant information from user-provided documents and uses it to generate accurate, grounded, and context-aware responses.
-
----
-
-# Project Overview
-
-Retrieval-Augmented Generation (RAG) combines the power of:
-
-- Information Retrieval
-- Vector Search
-- Large Language Models (LLMs)
-
-The goal of this project is to build an intelligent document-based question-answering system where users can interact with their own knowledge base.
-
-When a user asks a question:
-
-1. The system searches through indexed documents.
-2. Retrieves the most relevant text chunks.
-3. Sends those chunks to the language model.
-4. Generates a contextual and accurate answer.
-
-This approach significantly improves:
-- factual accuracy
-- hallucination reduction
-- domain-specific answering
-- explainability
-
----
-
-# Features
-
-- Upload and process PDFs and text documents
-- Semantic text chunking
-- Embedding generation using Hugging Face/OpenAI
-- Vector similarity search using FAISS/ChromaDB
-- Context-aware answer generation
-- FastAPI backend APIs
-- Streamlit/Frontend UI integration
-- Modular and scalable architecture
-- Conversational retrieval pipeline
-- Memory-aware responses
-- Evaluation pipeline for RAG quality
-- Document summarization support
-- Docker support
-- Environment-based configuration
-- Extensible pipeline for future improvements
-
----
-
-# How RAG Works
-
-## 1. Document Loading
-The system loads external documents such as:
-- PDFs
-- text files
-- notes
-- reports
-- knowledge base documents
-
----
-
-## 2. Text Splitting
-Large documents are split into smaller chunks to:
-- improve retrieval quality
-- reduce token size
-- preserve semantic meaning
-
----
-
-## 3. Embedding Generation
-Each chunk is converted into a dense vector representation using:
-- Hugging Face Embeddings
-- OpenAI Embeddings
-
-Embeddings capture semantic meaning instead of simple keywords.
-
----
-
-## 4. Vector Storage
-Embeddings are stored inside:
-- FAISS
-- ChromaDB
-
-This allows efficient similarity search over large document collections.
-
----
-
-## 5. Query Processing
-When a user asks a question:
-- the query is converted into an embedding vector
-- semantic similarity search is performed
-
----
-
-## 6. Retrieval
-The most relevant chunks are retrieved based on vector similarity.
-
----
-
-## 7. Answer Generation
-The retrieved chunks are passed to the language model as context.
-
-The language model generates:
-- grounded
-- contextual
-- accurate responses
-
----
-
-# Project Architecture
+## Architecture
 
 ```text
-                ┌──────────────────┐
-                │   User Query     │
-                └────────┬─────────┘
-                         │
-                         ▼
-                ┌──────────────────┐
-                │ Query Embedding  │
-                └────────┬─────────┘
-                         │
-                         ▼
-                ┌──────────────────┐
-                │ Vector Database  │
-                │ (FAISS/ChromaDB) │
-                └────────┬─────────┘
-                         │
-             Retrieve Relevant Chunks
-                         │
-                         ▼
-                ┌──────────────────┐
-                │ Retrieved Context│
-                └────────┬─────────┘
-                         │
-                         ▼
-                ┌──────────────────┐
-                │ Language Model   │
-                │ (OpenAI/LLM)     │
-                └────────┬─────────┘
-                         │
-                         ▼
-                ┌──────────────────┐
-                │ Final Response   │
-                └──────────────────┘
-```
+                                        ┌─────────────────────────┐
+                                        │      User Query         │
+                                        └────────────┬────────────┘
+                                                     │
+                                                     ▼
+                                        ┌─────────────────────────┐
+                                        │     FastAPI Backend     │
+                                        └────────────┬────────────┘
+                                                     │
+                                                     ▼
+                                        ┌─────────────────────────┐
+                                        │ Query Classification    │
+                                        │                         │
+                                        │ • Entity Lookup         │
+                                        │ • Semantic Search       │
+                                        │ • Counting / Ranking    │
+                                        │ • Comparison            │
+                                        │ • Temporal Queries      │
+                                        │ • Multi-Hop Reasoning   │
+                                        └────────────┬────────────┘
+                                                     │
+                                                     ▼
+                    ┌─────────────────────────────────────────────────────────┐
+                    │                Hybrid Retrieval Engine                  │
+                    │                                                         │
+                    │ • ChromaDB Dense Vector Search                          │
+                    │ • BM25 Keyword Search                                   │
+                    │ • Neo4j Graph Retrieval                                 │
+                    └───────────────┬─────────────────────────────────────────┘
+                                    │
+                                    ▼
+                    ┌──────────────────────────────────────────┐
+                    │     Reciprocal Rank Fusion (RRF)         │
+                    │       Aggregates Retrieval Results       │
+                    └────────────────┬─────────────────────────┘
+                                     │
+                                     ▼
+                    ┌──────────────────────────────────────────┐
+                    │ Graph Boosting & Evidence Filtering      │
+                    └────────────────┬─────────────────────────┘
+                                     │
+                                     ▼
+                    ┌──────────────────────────────────────────┐
+                    │ Cross Encoder Re-Ranker                  │
+                    │ ms-marco-MiniLM-L-6-v2                   │
+                    └────────────────┬─────────────────────────┘
+                                     │
+                                     ▼
+                    ┌──────────────────────────────────────────┐
+                    │ Top Relevant Chunks + Graph Context      │
+                    └────────────────┬─────────────────────────┘
+                                     │
+                                     ▼
+                    ┌──────────────────────────────────────────┐
+                    │            Reasoning Agent               │
+                    │                                          │
+                    │ • Aggregation                            │
+                    │ • Counting                               │
+                    │ • Ranking                                │
+                    │ • Comparisons                            │
+                    │ • Evidence Validation                    │
+                    │ • Sufficiency Checks                     │
+                    └────────────────┬─────────────────────────┘
+                                     │
+                                     ▼
+                    ┌──────────────────────────────────────────┐
+                    │ NVIDIA Llama 3.3 70B                    │
+                    │ Grounded Answer Generation               │
+                    └────────────────┬─────────────────────────┘
+                                     │
+                                     ▼
+                    ┌──────────────────────────────────────────┐
+                    │ Confidence & Faithfulness Evaluation     │
+                    └────────────────┬─────────────────────────┘
+                                     │
+                                     ▼
+                    ┌──────────────────────────────────────────┐
+                    │ Final Response                           │
+                    │                                          │
+                    │ • Generated Answer                       │
+                    │ • Source Citations                       │
+                    │ • Confidence Score                       │
+                    │ • Query Classification                   │
+                    └──────────────────────────────────────────┘
 
----
 
-# Tech Stack
 
-## Backend
-- Python
-- FastAPI
-- LangChain
+=================================================================================
+                               DOCUMENT INGESTION PIPELINE
+=================================================================================
 
-## AI / NLP
-- OpenAI API
-- Hugging Face Transformers
-- Sentence Transformers
 
-## Vector Database
-- FAISS
-- ChromaDB
+┌───────────────────────────┐
+│ PDF / Image / Screenshot  │
+└─────────────┬─────────────┘
+              │
+              ▼
+┌───────────────────────────┐
+│ PyMuPDF Text Extraction   │
+└─────────────┬─────────────┘
+              │
+      Enough Native Text?
+          ┌───┴───┐
+          │       │
+         Yes      No
+          │       │
+          ▼       ▼
+┌──────────────┐  ┌─────────────────────┐
+│ Clean Text   │  │ OCR Pipeline        │
+│ Processing   │  │ PaddleOCR           │
+└──────┬───────┘  │ Tesseract Fallback  │
+       │          └──────────┬──────────┘
+       └──────────┬──────────┘
+                  │
+                  ▼
+┌───────────────────────────┐
+│ Semantic Chunking         │
+│ 512 Tokens + Overlap      │
+└─────────────┬─────────────┘
+              │
+              ▼
+┌───────────────────────────┐
+│ Metadata Enrichment       │
+│                           │
+│ • Page Number             │
+│ • Section                 │
+│ • OCR Confidence          │
+│ • Extraction Method       │
+└─────────────┬─────────────┘
+              │
+              ▼
+┌───────────────────────────┐
+│ Entity & Relation         │
+│ Extraction using LLM      │
+└─────────────┬─────────────┘
+              │
+              ▼
+┌───────────────────────────┐
+│ Entity Normalization      │
+│ & Deduplication           │
+└───────┬─────────┬─────────┘
+        │         │
+        ▼         ▼
+┌────────────┐ ┌────────────┐
+│ Embeddings │ │ Neo4j      │
+│ BGE Large  │ │ Knowledge  │
+│            │ │ Graph      │
+└─────┬──────┘ └─────┬──────┘
+      │              │
+      ▼              ▼
+┌────────────┐ ┌────────────┐
+│ ChromaDB   │ │ Entity     │
+│ Vector DB  │ │ Relations  │
+└─────┬──────┘ └─────┬──────┘
+      │              │
+      └──────┬───────┘
+             ▼
+┌───────────────────────────┐
+│ BM25 Index Construction   │
+└─────────────┬─────────────┘
+              │
+              ▼
+┌───────────────────────────┐
+│ Hybrid Retrieval Ready    │
+│ Knowledge Corpus          │
+└───────────────────────────┘
 
-## Frontend
-- Streamlit
-- React / Next.js
+## What This Project Uses
 
-## Deployment & DevOps
-- Docker
-- Docker Compose
+| Area | Technology |
+| --- | --- |
+| Backend API | FastAPI, Pydantic |
+| Frontend | Next.js 14, React 18, TypeScript |
+| LLM provider | NVIDIA OpenAI-compatible API |
+| Default LLM | `meta/llama-3.3-70b-instruct` |
+| Embedding model | `BAAI/bge-large-en-v1.5` via `sentence-transformers` |
+| Reranker | `cross-encoder/ms-marco-MiniLM-L-6-v2` |
+| Vector database | ChromaDB persistent local store |
+| Graph database | Neo4j |
+| Keyword search | BM25 using `rank-bm25` |
+| OCR | Native PDF extraction with PyMuPDF, PaddleOCR fallback, Tesseract fallback |
+| Cache | Redis L1 cache, in-memory/disk fallback L2 cache |
+| Memory | Redis-backed chat memory with in-memory fallback |
+| Evaluation | Auto-generated verified QA pairs, Recall@1/@3/@5, MRR, grounding metrics |
+| Deployment | Docker, Docker Compose |
 
----
+## Core Features
 
-# Folder Structure
+- Upload PDFs and image documents through the API/frontend.
+- Extract text from native PDFs and OCR scanned pages/images.
+- Build semantic chunks with page, chunk, section, extraction method, and OCR confidence metadata.
+- Extract financial/business entities and relationships into Neo4j.
+- Store local embeddings in ChromaDB.
+- Retrieve using a hybrid approach: BM25 + dense vector search + Neo4j entity graph.
+- Classify queries into lookup, structured reasoning, relationship, temporal, multi-hop, aggregation, counting, ranking, comparison, and analytical query types.
+- Rerank retrieved evidence with a cross-encoder.
+- Run a reasoning agent before generation for calculations, rankings, counts, and evidence sufficiency.
+- Generate grounded answers with source citations and confidence scores.
+- Cache repeated and semantically similar answers.
+- Evaluate retrieval and grounding quality from uploaded documents.
+
+## Architecture
 
 ```text
-RAG/
-│
-├── backend/
-│   │
-│   ├── app/
-│   │   ├── __init__.py
-│   │   ├── cache.py
-│   │   ├── config.py
-│   │   ├── embeddings.py
-│   │   ├── evaluation.py
-│   │   ├── generation.py
-│   │   ├── ingestion.py
-│   │   ├── main.py
-│   │   ├── memory.py
-│   │   ├── models.py
-│   │   ├── pipeline.py
-│   │   ├── retrieval.py
-│   │   ├── summarizer.py
-│   │   └── vectorstore.py
-│   │
-│   ├── data/
-│   ├── tests/
-│   ├── .env
-│   ├── .env.example
-│   ├── DESIGN.md
-│   ├── Dockerfile
-│   ├── fix_data.py
-│   ├── generate_sample_pdfs.py
-│   ├── requirements.txt
-│   └── setup_and_run.ps1
-│
-├── frontend/
-│   ├── src/
-│   ├── .env.local
-│   ├── Dockerfile
-│   ├── next-env.d.ts
-│   ├── next.config.mjs
-│   ├── package.json
-│   ├── package-lock.json
-│   └── tsconfig.json
-│
-├── docker-compose.yml
-├── README.md
-└── .gitignore
+frontend/Next.js
+    |
+    | REST API
+    v
+backend/FastAPI
+    |
+    |-- ingestion.py + ocr.py        -> document parsing and chunking
+    |-- entities.py                  -> entity and relation abstraction
+    |-- embeddings.py                -> local embedding model
+    |-- vectorstore.py               -> ChromaDB persistence
+    |-- graph.py                     -> Neo4j entity graph
+    |-- retrieval.py                 -> BM25 + dense + graph + rerank
+    |-- query_agent.py               -> query classifier and strategy router
+    |-- reasoning_agent.py           -> structured reasoning over evidence
+    |-- generation.py                -> grounded LLM answer generation
+    |-- evaluation.py                -> RAG quality evaluation
+    |-- cache.py / memory.py         -> answer cache and chat memory
 ```
 
----
+## Query Classification
 
-# Installation Steps
+The classifier agent is lightweight and runs without an LLM call. It maps a query to a retrieval strategy and `top_k` depth.
 
-## 1. Clone Repository
+Important query families include:
 
-```bash
-git clone https://github.com/your-username/rag-project.git
-cd rag-project
-```
+- Lookup: `ENTITY_LOOKUP`, `SEMANTIC_LOOKUP`, `LOOKUP`
+- Structured reasoning: `NUMERICAL_FILTER`, `COUNTING`, `AGGREGATION`, `RANKING`
+- Relationship reasoning: `COMPARISON`, `RELATIONSHIP`, `MULTI_HOP`, `TEMPORAL`, `ANALYTICAL`
 
----
+These classifications control whether the system leans more on exact metadata, dense search, graph retrieval, wider corpus retrieval, or iterative retrieval.
 
-## 2. Create Virtual Environment
+## Main API Endpoints
 
-### Windows
-```bash
-python -m venv .venv
-.venv\Scripts\activate
-```
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| `GET` | `/health` | Check server health and indexed document count |
+| `POST` | `/ingest` | Upload and ingest a PDF/image document |
+| `POST` | `/query` | Ask a question over uploaded documents |
+| `GET` | `/documents` | List indexed documents |
+| `GET` | `/documents/{document_name}` | Get document metadata and summary |
+| `DELETE` | `/documents/{document_name}` | Remove one document from indexes and disk |
+| `POST` | `/reset` | Remove all documents |
+| `GET` | `/entities` | Search graph entities |
+| `GET` | `/entities/{entity_id}/neighbors` | Inspect graph neighbors |
+| `POST` | `/evaluate` | Auto-generate verified QA pairs and evaluate |
+| `POST` | `/evaluate/predefined` | Run predefined evaluation pairs |
+| `GET` | `/cache/status` | Check cache readiness |
+| `POST` | `/cache/clear` | Clear answer cache |
+| `POST` | `/chat/clear` | Clear conversational memory |
+| `POST` | `/debug/query` | Inspect classification and retrieval results |
 
-### Linux / Mac
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-```
+## Environment Variables
 
----
-
-## 3. Install Dependencies
-
-```bash
-pip install -r backend/requirements.txt
-```
-
----
-
-# Environment Variables
-
-Create a `.env` file inside the backend directory.
+Create `backend/.env` from `backend/.env.example`.
 
 ```env
-OPENAI_API_KEY=your_openai_api_key
+NVIDIA_API_KEY=your-nvidia-api-key-here
+NVIDIA_BASE_URL=https://integrate.api.nvidia.com/v1
+NVIDIA_MODEL=meta/llama-3.3-70b-instruct
+NVIDIA_MAX_TOKENS=1024
+NVIDIA_TEMPERATURE=0.1
 
-EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+EMBEDDING_MODEL=BAAI/bge-large-en-v1.5
+EMBEDDING_DEVICE=cpu
 
-VECTOR_DB=chroma
+CHROMA_PERSIST_DIR=./data/chroma_db
+COLLECTION_NAME=legal_docs
 
-CHROMA_DB_DIR=./chroma_db
+GRAPH_BACKEND=neo4j
+NEO4J_URI=bolt://localhost:7687
+NEO4J_USER=neo4j
+NEO4J_PASSWORD=password
+NEO4J_DATABASE=neo4j
 
-MODEL_NAME=gpt-4o-mini
+REDIS_URL=redis://localhost:6379/0
 ```
 
----
+Neo4j is required because `GRAPH_BACKEND` is configured for Neo4j only. Redis is optional; if Redis is unavailable, the app falls back to in-memory and local disk caching where supported.
 
-# How to Run the Project
+## Run Locally
 
-## Run Backend
+### Backend
 
 ```bash
 cd backend
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-Backend server:
+Backend URL:
+
 ```text
 http://localhost:8000
 ```
 
----
-
-## Run Frontend
+### Frontend
 
 ```bash
 cd frontend
@@ -304,119 +312,85 @@ npm install
 npm run dev
 ```
 
-Frontend server:
+Frontend URL:
+
 ```text
 http://localhost:3000
 ```
 
----
-
-# Docker Setup
-
-## Build and Run
+## Docker
 
 ```bash
 docker-compose up --build
 ```
 
----
+The compose file starts the FastAPI backend and Next.js frontend. Ensure required external services such as Neo4j, and optionally Redis, are available or configured for your environment.
 
-# Usage Instructions
+## Typical Usage
 
-1. Upload PDF or document
-2. Documents are processed and chunked
-3. Embeddings are generated
-4. Chunks are stored in vector database
-5. Ask questions through the UI/API
-6. System retrieves relevant chunks
-7. LLM generates final contextual response
+1. Start Neo4j.
+2. Configure `backend/.env` with your NVIDIA API key and model settings.
+3. Start the backend and frontend.
+4. Upload a PDF, scanned PDF, screenshot, or image.
+5. Wait for ingestion to complete: OCR/text extraction, chunking, entity abstraction, embeddings, ChromaDB insert, Neo4j graph insert, and BM25 rebuild.
+6. Ask questions from the frontend or `/query`.
+7. Review answer sources, confidence, and query classification.
+8. Run `/evaluate` to measure retrieval and grounding quality on the current corpus.
 
----
+## Evaluation
 
-# Example Query Flow
+The project includes an automatic evaluation pipeline. It samples indexed chunks, asks the configured LLM to generate factual, relational, and comparative questions, verifies each question against the source chunk, and then evaluates retrieval quality.
 
-## User Question
+Metrics include:
 
-```text
-What are the key responsibilities mentioned in the contract?
-```
+- Recall@1, Recall@3, Recall@5
+- MRR
+- answer faithfulness
+- evidence coverage
+- unsupported answer rate
+- speculative graph edge rate
 
----
-
-## System Flow
-
-1. Query converted to embedding
-2. Similar chunks retrieved from vector DB
-3. Retrieved context passed to LLM
-4. Final answer generated
-
----
-
-## Example Response
+## Repository Structure
 
 ```text
-The contract specifies responsibilities related to project delivery,
-quality assurance, reporting, and compliance requirements.
+RAG/
+|-- backend/
+|   |-- app/
+|   |   |-- main.py
+|   |   |-- pipeline.py
+|   |   |-- ingestion.py
+|   |   |-- ocr.py
+|   |   |-- entities.py
+|   |   |-- graph.py
+|   |   |-- embeddings.py
+|   |   |-- vectorstore.py
+|   |   |-- retrieval.py
+|   |   |-- query_agent.py
+|   |   |-- reasoning_agent.py
+|   |   |-- generation.py
+|   |   |-- evaluation.py
+|   |   |-- cache.py
+|   |   |-- memory.py
+|   |   `-- models.py
+|   |-- data/
+|   |-- requirements.txt
+|   |-- Dockerfile
+|   `-- .env.example
+|-- frontend/
+|   |-- src/
+|   |-- package.json
+|   |-- Dockerfile
+|   `-- next.config.mjs
+|-- docker-compose.yml
+`-- README.md
 ```
 
----
+DocRAG is a full-stack document question-answering system for PDFs, scanned documents, screenshots, and image files. It combines dense vector search, keyword search, and graph-based entity retrieval so answers can use both semantic similarity and structured entity relationships.
 
-# Benefits of Using RAG
+## Notes
 
-- Reduces hallucinations
-- Uses real-time/custom data
-- Improves factual accuracy
-- Supports domain-specific applications
-- Scales across large document collections
-- Better explainability
-- Personalized AI assistant capability
-
----
-
-# Limitations
-
-- Retrieval quality depends on chunking strategy
-- Large vector databases may require optimization
-- Embedding quality impacts accuracy
-- LLM inference can be expensive
-- Context window limitations exist
-
----
-
-# Future Improvements
-
-- Hybrid search (BM25 + vector search)
-- Multi-modal RAG
-- OCR support for scanned PDFs
-- Streaming responses
-- Authentication system
-- Cloud deployment (AWS/Azure/GCP)
-- Kubernetes deployment
-- Real-time document indexing
-- Citation generation
-- Conversational memory optimization
-- Fine-tuned domain-specific models
-
----
-
-# Conclusion
-
-This project demonstrates how Retrieval-Augmented Generation (RAG) can significantly improve the quality and reliability of AI-generated responses by integrating external knowledge retrieval with powerful language models.
-
-The system is modular, scalable, and production-oriented, making it suitable for:
-- AI assistants
-- enterprise knowledge bases
-- document search systems
-- research assistants
-- customer support automation
-- internal company tools
-
-By combining vector databases, embeddings, retrieval pipelines, and LLMs, this project provides a strong foundation for building advanced AI-powered applications.
-
----
-
-# Author
-
-Harsh Mangukiya
-
-GitHub: https://github.com/harshmangukiya71/RAG_Full_Stack
+- The LLM is used for grounded answer generation, document summaries, entity/relation extraction, and evaluation question generation.
+- The embedding model runs locally through Sentence Transformers.
+- ChromaDB persists vectors under `backend/data/chroma_db` by default.
+- Neo4j stores entities, document mentions, and `RELATED` relationships extracted from document chunks.
+- The final answer is produced only after retrieval, reranking, reasoning, and confidence scoring.
