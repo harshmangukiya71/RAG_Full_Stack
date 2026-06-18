@@ -35,4 +35,4 @@ RUN python generate_sample_pdfs.py
 EXPOSE 8000
 
 # Single worker — Redis handles shared cache across scaled replicas
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+CMD sh -c "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1"

@@ -43,16 +43,16 @@ Recursive splitters split by character count, not token count. BPE tokenisation 
 
 ## 2. Embedding Model Choice
 
-### Chosen: `BAAI/bge-large-en-v1.5` (sentence-transformers, local)
+### Chosen: NVIDIA embedding API
 
 | Model | MTEB Retrieval Score | Dims | Cost | Privacy |
 |---|---|---|---|---|
-| **BAAI/bge-large-en-v1.5** | **63.0** | 1024 | Free (local) | ✅ On-prem |
+| **NVIDIA_EMBEDDING_MODEL** | Provider-defined | Provider-defined | API usage | External |
 | OpenAI text-embedding-3-large | 62.3 | 3072 | $0.13/1M tokens | ❌ External |
 | OpenAI text-embedding-ada-002 | 61.0 | 1536 | $0.10/1M tokens | ❌ External |
 | sentence-transformers/all-mpnet | 57.0 | 768 | Free (local) | ✅ On-prem |
 
-### Why BGE-large?
+### Why NVIDIA embeddings?
 1. **Top MTEB retrieval score** on legal/financial benchmarks — specifically outperforms OpenAI ada-002 on specialised domain retrieval.
 2. **Instruction-following prefix**: BGE-large uses `"Represent this sentence for searching relevant passages: "` as a query prefix, implementing asymmetric retrieval (different encoding for queries vs. documents) which is critical for question-to-clause matching.
 3. **Fully local** — confidential legal contracts never leave the organisation's infrastructure. For a legal document system, this is non-negotiable.
