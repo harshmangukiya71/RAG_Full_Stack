@@ -25,8 +25,6 @@ from hashlib import sha256
 from pathlib import Path
 from typing import Optional
 
-import chromadb
-
 from app.cache import AnswerCache
 from app.config import get_settings
 from app.embeddings import EmbeddingModel
@@ -226,7 +224,7 @@ class RAGPipeline:
     def ingest_document(self, pdf_path: Path | str) -> IngestResponse:
         """
         Ingest a single PDF document:
-          parse → chunk → entity enrich → embed → upsert ChromaDB →
+          parse → chunk → entity enrich → embed → upsert vector store →
           upsert graph → rebuild BM25.
         """
         pdf_path = Path(pdf_path)
@@ -1176,34 +1174,11 @@ class RAGPipeline:
         return graph_chunks, query_entity_ids
 
     def _rebuild_bm25_from_store(self) -> None:
-        """Load all chunks from ChromaDB and rebuild the in-memory BM25 index."""
+        """Load all chunks from the vector store and rebuild the in-memory BM25 index."""
         if self._vector_store.count == 0:
             self._retriever.rebuild_bm25([])
             return
         try:
-            result = self._vector_store._collection.get(
-                include=["documents", "metadatas"]
-            )
-            chunks: list[Chunk] = []
-            for text, meta in zip(result["documents"], result["metadatas"]):  # type: ignore
-                entities = []
-                try:
-                    entities = json.loads(meta.get("entities", "[]") or "[]")
-                except Exception:
-                    pass
-                chunks.append(
-                    Chunk(
-                        document=meta["document"],
-                        page=meta["page"],
-                        chunk_index=meta["chunk_index"],
-                        text=text,
-                        token_count=meta.get("token_count", len(text) // 4),
-                        section_title=meta.get("section_title") or None,
-                        entities=entities,
-                        ocr_confidence=meta.get("ocr_confidence"),
-                        extraction_method=meta.get("extraction_method", "native"),
-                    )
-                )
-            self._retriever.rebuild_bm25(chunks)
+            self._retriever.rebuild_bm25(self._vector_store.list_all_chunks())
         except Exception as exc:
             logger.warning("BM25 rebuild failed: %s", exc)
