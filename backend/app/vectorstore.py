@@ -97,9 +97,14 @@ class VectorStore:
         """
         Upsert chunks with their embeddings.
         Uses chunk_index + document as deterministic ID so re-ingestion is idempotent.
+
+        Embedding model migrations require a full re-embed/reindex. ChromaDB
+        fixes collection dimensionality from stored vectors, so NVIDIA vectors
+        cannot be mixed with older local embedding vectors.
         """
         if not chunks:
             return
+        self._validate_embedding_dimensions(embeddings)
 
         ids = [f"{c.document}::{c.chunk_index}" for c in chunks]
         metadatas: list[dict[str, Any]] = [
@@ -142,6 +147,8 @@ class VectorStore:
             logger.warning("Vector store is empty — no documents ingested yet.")
             return []
 
+        self._validate_embedding_dimensions([query_embedding])
+
         kwargs: dict[str, Any] = {
             "query_embeddings": [query_embedding],
             "n_results": min(top_k, count),
@@ -170,6 +177,26 @@ class VectorStore:
             ))
 
         return retrieved
+
+    def _validate_embedding_dimensions(self, embeddings: list[list[float]]) -> None:
+        if not embeddings:
+            return
+        incoming_dim = len(embeddings[0])
+        if incoming_dim == 0 or any(len(embedding) != incoming_dim for embedding in embeddings):
+            raise ValueError("All embeddings must be non-empty and have the same dimension")
+        if self._collection.count() == 0:
+            return
+
+        sample = self._collection.get(limit=1, include=["embeddings"])
+        stored_embeddings = sample.get("embeddings")
+        if stored_embeddings is None or len(stored_embeddings) == 0:
+            return
+        stored_dim = len(stored_embeddings[0])
+        if stored_dim != incoming_dim:
+            raise ValueError(
+                f"Embedding dimension mismatch: stored={stored_dim}, incoming={incoming_dim}. "
+                "Re-embed and reindex documents after changing the embedding model."
+            )
 
     def get_chunks_by_keys(self, keys: list[tuple[str, int, int]], score: float = 0.7) -> list[RetrievedChunk]:
         """Fetch chunks by (document, page, chunk_index), used by graph retrieval."""

@@ -3,6 +3,7 @@ config.py - centralised settings via pydantic-settings.
 """
 from functools import lru_cache
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -18,6 +19,8 @@ class Settings(BaseSettings):
     nvidia_model: str = "meta/llama-3.3-70b-instruct"
     nvidia_max_tokens: int = 1024
     nvidia_temperature: float = 0.1
+    nvidia_embedding_model: str = "nvidia/nv-embedqa-e5-v5"
+    nvidia_embedding_batch_size: int = 64
 
     @property
     def gemini_api_key(self) -> str:
@@ -44,9 +47,6 @@ class Settings(BaseSettings):
     summary_max_tokens_per_chunk: int = 350
     summary_final_max_tokens: int = 700
 
-    embedding_model: str = "BAAI/bge-large-en-v1.5"
-    embedding_device: str = "cpu"
-
     chroma_persist_dir: str = "./data/chroma_db"
     collection_name: str = "legal_docs"
 
@@ -67,7 +67,7 @@ class Settings(BaseSettings):
     confidence_scale_factor: float = 1.6
 
     memory_backend: str = "auto"
-    redis_url: str = "redis://localhost:6379/0"
+    redis_url: str = ""
     memory_ttl_seconds: int = 60 * 60 * 24
     memory_max_turns: int = 4
 
@@ -77,12 +77,12 @@ class Settings(BaseSettings):
     semantic_cache_threshold: float = 0.92
 
     graph_backend: str = "neo4j"
-    neo4j_uri: str = "bolt://localhost:7687"
-    neo4j_user: str = "neo4j"
-    neo4j_password: str = "password"
+    neo4j_uri: str = ""
+    neo4j_username: str = ""
+    neo4j_password: str = ""
     neo4j_database: str = "neo4j"
 
-    cors_origins: list[str] = ["http://localhost:3000", "http://localhost:3001"]
+    cors_origins: list[str] = []
 
     # ── Agentic RAG settings ──────────────────────────────────────────────────
     query_agent_enabled: bool = True
@@ -90,6 +90,20 @@ class Settings(BaseSettings):
     max_retrieval_iterations: int = 3
     cache_load_monitoring: bool = True
     cache_ready_percent: int = 100
+
+    @field_validator("neo4j_uri")
+    @classmethod
+    def require_aura_scheme(cls, value: str) -> str:
+        if value and not value.startswith("neo4j+s://"):
+            raise ValueError("NEO4J_URI must use the Neo4j Aura scheme: neo4j+s://")
+        return value
+
+    @field_validator("nvidia_api_key", "nvidia_embedding_model", "neo4j_uri", "neo4j_username", "neo4j_password")
+    @classmethod
+    def require_cloud_settings(cls, value: str, info) -> str:
+        if not value.strip():
+            raise ValueError(f"{info.field_name.upper()} must be set from the deployment environment")
+        return value
 
 
 @lru_cache

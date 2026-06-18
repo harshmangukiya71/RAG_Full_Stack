@@ -84,6 +84,9 @@ class MemoryManager:
         if self._settings.memory_backend == "memory":
             logger.info("Using in-memory chat memory")
             return None
+        if not self._settings.redis_url:
+            logger.info("Redis URL is not configured; using in-memory chat memory")
+            return None
         try:
             import redis
 

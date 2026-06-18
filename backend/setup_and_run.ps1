@@ -37,7 +37,7 @@ if (Test-Path "data\chroma_db") {
 }
 
 # Step 4: Start the FastAPI backend (it will auto-ingest the legal PDFs on startup)
-Write-Host "`n[4/4] Starting FastAPI backend on http://localhost:8000..." -ForegroundColor Yellow
+Write-Host "`n[4/4] Starting FastAPI backend on the configured Uvicorn bind address..." -ForegroundColor Yellow
 Write-Host "      The server will auto-ingest the 3 legal PDFs on first start." -ForegroundColor Gray
 Write-Host "      Press Ctrl+C to stop.`n" -ForegroundColor Gray
 

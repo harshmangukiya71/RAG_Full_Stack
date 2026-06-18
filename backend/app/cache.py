@@ -152,6 +152,9 @@ class _RedisClient:
         self._connect()
 
     def _connect(self) -> None:
+        if not self._url:
+            logger.info("Redis cache URL is not configured; using in-memory cache only.")
+            return
         try:
             import redis  # type: ignore
             client = redis.Redis.from_url(
@@ -401,6 +404,8 @@ class AnswerCache:
                 try:
                     data = json.loads(raw)
                     emb = _b64_to_embedding(data["embedding"])
+                    if emb.shape != q_norm.shape:
+                        continue
                     candidate_embeddings.append(emb)
                     candidate_keys.append(k)
                     candidate_raws.append(data)
@@ -440,7 +445,7 @@ class AnswerCache:
             return None
 
         if self._matrix_dirty or self._matrix is None:
-            self._rebuild_matrix()
+            self._rebuild_matrix(expected_dim=q_norm.shape[0])
 
         if self._matrix is None or not self._matrix_ids:
             self._misses += 1
@@ -450,6 +455,7 @@ class AnswerCache:
             i for i, cid in enumerate(self._matrix_ids)
             if cid in self._entries
             and self._entries[cid].corpus_key == corpus_key
+            and self._entries[cid].embedding.shape == q_norm.shape
         ]
         if not valid:
             self._misses += 1
@@ -603,13 +609,22 @@ class AnswerCache:
         self._evict_lru()
         self._save_to_disk()
 
-    def _rebuild_matrix(self) -> None:
+    def _rebuild_matrix(self, expected_dim: int | None = None) -> None:
         if not self._entries:
             self._matrix = None
             self._matrix_ids = []
             self._matrix_dirty = False
             return
-        ids = list(self._entries.keys())
+        ids = [
+            cache_id
+            for cache_id, entry in self._entries.items()
+            if expected_dim is None or entry.embedding.shape == (expected_dim,)
+        ]
+        if not ids:
+            self._matrix = None
+            self._matrix_ids = []
+            self._matrix_dirty = False
+            return
         arrays = [self._entries[cid].embedding for cid in ids]
         self._matrix = np.stack(arrays, axis=0)
         self._matrix_ids = ids

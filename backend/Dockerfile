@@ -24,9 +24,9 @@ COPY . .
 # Create data directories
 RUN mkdir -p data/pdfs data/chroma_db data/uploads data/graph tests
 
-# Pre-download embedding and cross-encoder models at build time
-RUN python -c "from sentence_transformers import SentenceTransformer, CrossEncoder; \
-    SentenceTransformer('BAAI/bge-large-en-v1.5'); \
+# Pre-download the unchanged cross-encoder reranker at build time.
+# Embeddings are served by NVIDIA's API and do not download local model files.
+RUN python -c "from sentence_transformers import CrossEncoder; \
     CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')"
 
 # Generate sample PDFs

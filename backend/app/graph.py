@@ -162,7 +162,7 @@ def create_graph_store() -> GraphStore:
         )
     return Neo4jGraphStore(
         settings.neo4j_uri,
-        settings.neo4j_user,
+        settings.neo4j_username,
         settings.neo4j_password,
         settings.neo4j_database,
     )
@@ -234,6 +234,8 @@ class Neo4jGraphStore:
     def __init__(self, uri: str, user: str, password: str, database: str = "neo4j") -> None:
         from neo4j import GraphDatabase  # type: ignore
 
+        if not uri.startswith("neo4j+s://"):
+            raise ValueError("NEO4J_URI must use neo4j+s:// for Neo4j Aura")
         self._database = database
         self._driver = GraphDatabase.driver(uri, auth=(user, password))
         self._driver.verify_connectivity()
