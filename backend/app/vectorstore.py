@@ -118,12 +118,31 @@ class VectorStore:
                 sparse_vectors_config=self._client.get_fastembed_sparse_vector_params() if hasattr(self._client, 'get_fastembed_sparse_vector_params') else None
             )
         
+        self._dense_vector_name = None
+        try:
+            info = self._client.get_collection(self._collection_name)
+            v_conf = info.config.params.vectors
+            if isinstance(v_conf, dict):
+                for k, v in v_conf.items():
+                    size = getattr(v, 'size', None)
+                    if size is None and isinstance(v, dict):
+                        size = v.get('size')
+                    if size == 4096:
+                        self._dense_vector_name = k
+                        break
+                if self._dense_vector_name is None and len(v_conf) > 0:
+                    self._dense_vector_name = list(v_conf.keys())[0]
+        except Exception as e:
+            logger.warning(f"Failed to inspect Qdrant collection config: {e}")
+            
         logger.info(
             "Using vector database: Qdrant\n"
             "Collection: %s\n"
             "Embedding dimension: 4096\n"
+            "Dense Vector Name: %s\n"
             "Qdrant connection successful",
-            self._collection_name
+            self._collection_name,
+            self._dense_vector_name or "(unnamed)"
         )
 
     @property
@@ -163,7 +182,12 @@ class VectorStore:
                     "text": c.text,
                     "chunk_id_str": id_str  # Keep original ID as string for exact matches
                 }
-                points.append(PointStruct(id=point_id, vector=emb, payload=payload))
+                if self._dense_vector_name:
+                    point_vector = {self._dense_vector_name: emb}
+                else:
+                    point_vector = emb
+                    
+                points.append(PointStruct(id=point_id, vector=point_vector, payload=payload))
 
             for start in range(0, len(points), 100):
                 self._client.upsert(
@@ -210,9 +234,14 @@ class VectorStore:
         self._validate_embedding_dimensions([query_embedding])
 
         if self._backend == "qdrant":
+            if self._dense_vector_name:
+                query_kwargs = {"query_vector": (self._dense_vector_name, query_embedding)}
+            else:
+                query_kwargs = {"query_vector": query_embedding}
+                
             search_result = self._client.search(
                 collection_name=self._collection_name,
-                query_vector=query_embedding,
+                **query_kwargs,
                 limit=min(top_k, count),
                 query_filter=_qdrant_filter(where),
                 with_payload=True
@@ -266,9 +295,16 @@ class VectorStore:
             return
 
         if self._backend == "qdrant":
-            # Assume 4096 based on requirements, but check configuration if possible
             collection_info = self._client.get_collection(self._collection_name)
-            stored_dim = collection_info.config.params.vectors.size if collection_info.config.params.vectors else None
+            v_conf = collection_info.config.params.vectors
+            stored_dim = None
+            if isinstance(v_conf, dict):
+                if self._dense_vector_name and self._dense_vector_name in v_conf:
+                    params = v_conf[self._dense_vector_name]
+                    stored_dim = getattr(params, 'size', None) or (isinstance(params, dict) and params.get('size'))
+            else:
+                stored_dim = getattr(v_conf, 'size', None) or (isinstance(v_conf, dict) and v_conf.get('size'))
+
             if stored_dim is None:
                 return
             if stored_dim != incoming_dim:
