@@ -47,8 +47,7 @@ class Settings(BaseSettings):
     summary_max_tokens_per_chunk: int = 350
     summary_final_max_tokens: int = 700
 
-    vector_db: str = "chroma"
-    chroma_persist_dir: str = "./data/chroma_db"
+    vector_db: str = "pinecone"
     collection_name: str = "legal_docs"
     pinecone_api_key: str = ""
     pinecone_index_name: str = ""

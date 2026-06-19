@@ -126,7 +126,7 @@ class MemoryManager:
         Clear ALL conversational memory across all sessions.
 
         Only removes chat history — does NOT touch document indexes,
-        Chroma database, graph store, or uploaded documents.
+        Pinecone database, graph store, or uploaded documents.
         """
         if self._redis:
             try:

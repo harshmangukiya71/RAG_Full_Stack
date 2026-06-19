@@ -11,7 +11,7 @@ import chromadb
 from chromadb.config import Settings as ChromaSettings
 
 try:
-    from pinecone import Pinecone
+    from pinecone import Pineconee
 except ImportError:  # pragma: no cover - Pinecone may be unused locally.
     Pinecone = None  # type: ignore[assignment]
 

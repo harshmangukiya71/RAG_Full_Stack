@@ -346,7 +346,7 @@ async def clear_chat() -> ClearResponse:
       • Conversation context
 
     Does NOT delete:
-      • Chroma database
+      • Pinecone database
       • Graph database
       • Uploaded documents
 
