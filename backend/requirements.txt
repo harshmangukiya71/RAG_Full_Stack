@@ -17,4 +17,4 @@ pytesseract>=0.3.10
 spacy>=3.7.0
 neo4j>=5.20.0
 paddleocr>=2.7.0
-pinecone>=5.0.0
+qdrant-client>=1.9.0

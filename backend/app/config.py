@@ -47,12 +47,10 @@ class Settings(BaseSettings):
     summary_max_tokens_per_chunk: int = 350
     summary_final_max_tokens: int = 700
 
-    vector_db: str = "pinecone"
-    collection_name: str = "legal_docs"
-    pinecone_api_key: str = ""
-    pinecone_index_name: str = ""
-    pinecone_host: str = ""
-    pinecone_namespace: str = ""
+    vector_db: str = "qdrant"
+    qdrant_url: str = ""
+    qdrant_api_key: str = ""
+    qdrant_collection: str = "agentic-rag"
 
     chunk_size_tokens: int = 512
     chunk_overlap_tokens: int = 64

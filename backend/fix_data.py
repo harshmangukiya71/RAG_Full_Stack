@@ -8,10 +8,8 @@ Run this from inside the backend directory:
 What this does:
 1. Generates the 3 legal sample PDFs (NDA, SLA, IP Assignment)
 2. Removes non-legal PDFs (resumes) from data/pdfs
-3. Wipes the stale ChromaDB (which contains resume embeddings)
-4. Re-ingests the 3 legal PDFs and reports chunk counts
+3. Re-ingests the 3 legal PDFs into Qdrant and reports chunk counts
 """
-import shutil
 import sys
 from pathlib import Path
 
@@ -48,18 +46,8 @@ if pdfs_dir.exists():
 print("  Remaining PDFs:", [f.name for f in pdfs_dir.glob("*.pdf")])
 print()
 
-# ── Step 3: Wipe ChromaDB ────────────────────────────────────────────────────
-print("[3/4] Wiping stale ChromaDB data...")
-chroma_dir = Path("data/chroma_db")
-if chroma_dir.exists():
-    shutil.rmtree(chroma_dir)
-    print(f"  Deleted: {chroma_dir}")
-else:
-    print("  No ChromaDB found (fresh start).")
-print()
-
-# ── Step 4: Ingest legal PDFs ────────────────────────────────────────────────
-print("[4/4] Ingesting legal PDFs into ChromaDB...")
+# ── Step 3: Ingest legal PDFs into Qdrant ──────────────────────────────────
+print("[3/4] Ingesting legal PDFs into Qdrant...")
 print("      (This will download the embedding model on first run — ~1.3 GB)")
 print()
 

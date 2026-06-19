@@ -73,7 +73,7 @@ Recursive splitters split by character count, not token count. BPE tokenisation 
 |---|---|---|---|---|
 | **ChromaDB** | ✅ Native | ✅ On-disk | None | < 1M chunks, local |
 | FAISS | ❌ No native filter | ❌ Manual | None | Pure ANN, batch |
-| Pinecone | ✅ Native | ✅ Cloud | External API | 1M+ chunks, cloud |
+| Qdrant Cloud | ✅ Native | ✅ Cloud | External API | 1M+ chunks, cloud |
 | Qdrant | ✅ Native | ✅ Distributed | Docker/cloud | 500k+ chunks, scalable |
 | Weaviate | ✅ Native | ✅ Distributed | Docker/cloud | Multi-modal |
 
@@ -82,8 +82,8 @@ FAISS is a pure ANN library — it has no native metadata. To filter results by 
 
 ChromaDB natively supports `where={"document": "NDA-VendorX.pdf"}` filter at query time — essential for legal use cases where users want to scope queries to a specific contract.
 
-### Why ChromaDB over Pinecone?
-Pinecone is excellent at scale (millions of vectors) but requires:
+### Why ChromaDB or Qdrant?
+Qdrant Cloud is excellent at scale (millions of vectors) and provides robust hybrid search capabilities. ChromaDB is kept as a local fallback for smaller deployments.
 - External API (network latency per query, ~30–100ms overhead)
 - Monthly cost ($70+/month for production tier)
 - Data leaving the organisation's infrastructure

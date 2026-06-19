@@ -126,7 +126,7 @@ class MemoryManager:
         Clear ALL conversational memory across all sessions.
 
         Only removes chat history — does NOT touch document indexes,
-        Pinecone database, graph store, or uploaded documents.
+        Qdrant database, graph store, or uploaded documents.
         """
         if self._redis:
             try:

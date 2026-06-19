@@ -27,17 +27,8 @@ Get-ChildItem -Path "data\pdfs" -Filter "*.pdf" | Where-Object {
 Write-Host "  PDFs in data/pdfs:" -ForegroundColor Green
 Get-ChildItem -Path "data\pdfs" -Filter "*.pdf" | ForEach-Object { Write-Host "    - $($_.Name)" }
 
-# Step 3: Clear the ChromaDB so stale resume embeddings are gone
-Write-Host "`n[3/4] Clearing old ChromaDB data..." -ForegroundColor Yellow
-if (Test-Path "data\chroma_db") {
-    Remove-Item -Recurse -Force "data\chroma_db"
-    Write-Host "  ChromaDB cleared." -ForegroundColor Green
-} else {
-    Write-Host "  No ChromaDB found (fresh start)." -ForegroundColor Green
-}
-
-# Step 4: Start the FastAPI backend (it will auto-ingest the legal PDFs on startup)
-Write-Host "`n[4/4] Starting FastAPI backend on the configured Uvicorn bind address..." -ForegroundColor Yellow
+# Step 3: Start the FastAPI backend (it will auto-ingest the legal PDFs on startup)
+Write-Host "`n[3/4] Starting FastAPI backend on the configured Uvicorn bind address..." -ForegroundColor Yellow
 Write-Host "      The server will auto-ingest the 3 legal PDFs on first start." -ForegroundColor Gray
 Write-Host "      Press Ctrl+C to stop.`n" -ForegroundColor Gray
 

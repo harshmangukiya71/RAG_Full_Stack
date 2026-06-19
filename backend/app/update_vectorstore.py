@@ -1,4 +1,12 @@
-"""Vector store backends for Qdrant Cloud and local ChromaDB."""
+import os
+import re
+
+file_path = r"C:\Users\os\Desktop\RAG\backend\app\vectorstore.py"
+
+with open(file_path, "r", encoding="utf-8") as f:
+    content = f.read()
+
+new_content = """\"\"\"Vector store backends for Qdrant Cloud and local ChromaDB.\"\"\"
 from __future__ import annotations
 
 import json
@@ -28,7 +36,7 @@ logger = logging.getLogger(__name__)
 _BAD_SUMMARY_MARKERS = (
     "partial summary 1",
     "please provide",
-    "provided \"partial summary",
+    "provided \\"partial summary",
     "provided partial summary",
     "is incomplete",
     "i apologize",
@@ -43,23 +51,23 @@ def _is_bad_summary(summary: str | None) -> bool:
 
 
 def _extractive_summary(documents: list[str]) -> str | None:
-    text = re.sub(r"\s+", " ", " ".join(documents)).strip()
+    text = re.sub(r"\\s+", " ", " ".join(documents)).strip()
     if not text:
         return None
     sentences = [
         sentence.strip()
-        for sentence in re.split(r"(?<=[.!?])\s+", text)
+        for sentence in re.split(r"(?<=[.!?])\\s+", text)
         if len(sentence.strip()) > 20
     ]
     if not sentences:
         return text[:1200]
     overview = " ".join(sentences[:2]).strip()
-    bullets = "\n".join(f"- {sentence}" for sentence in (sentences[2:8] or sentences[:6]))
-    return f"{overview}\n\nKey points:\n{bullets}".strip()
+    bullets = "\\n".join(f"- {sentence}" for sentence in (sentences[2:8] or sentences[:6]))
+    return f"{overview}\\n\\nKey points:\\n{bullets}".strip()
 
 
 class VectorStore:
-    """Thin wrapper around the configured vector database."""
+    \"\"\"Thin wrapper around the configured vector database.\"\"\"
 
     def __init__(self) -> None:
         settings = get_settings()
@@ -119,9 +127,9 @@ class VectorStore:
             )
         
         logger.info(
-            "Using vector database: Qdrant\n"
-            "Collection: %s\n"
-            "Embedding dimension: 4096\n"
+            "Using vector database: Qdrant\\n"
+            "Collection: %s\\n"
+            "Embedding dimension: 4096\\n"
             "Qdrant connection successful",
             self._collection_name
         )
@@ -139,7 +147,7 @@ class VectorStore:
         embeddings: list[list[float]],
         document_summary: str | None = None,
     ) -> None:
-        """Upsert chunks with their embeddings."""
+        \"\"\"Upsert chunks with their embeddings.\"\"\"
         if not chunks:
             return
         self._validate_embedding_dimensions(embeddings)
@@ -201,7 +209,7 @@ class VectorStore:
         top_k: int = 20,
         where: dict | None = None,
     ) -> list[RetrievedChunk]:
-        """Dense vector search ordered by cosine similarity descending."""
+        \"\"\"Dense vector search ordered by cosine similarity descending.\"\"\"
         count = self.count
         if count == 0:
             logger.warning("Vector store is empty - no documents ingested yet.")
@@ -290,7 +298,7 @@ class VectorStore:
             )
 
     def get_chunks_by_keys(self, keys: list[tuple[str, int, int]], score: float = 0.7) -> list[RetrievedChunk]:
-        """Fetch chunks by (document, page, chunk_index), used by graph retrieval."""
+        \"\"\"Fetch chunks by (document, page, chunk_index), used by graph retrieval.\"\"\"
         if not keys:
             return []
 
@@ -353,7 +361,7 @@ class VectorStore:
         return retrieved
 
     def list_documents(self) -> list[str]:
-        """Return unique document names in the collection."""
+        \"\"\"Return unique document names in the collection.\"\"\"
         if self.count == 0:
             return []
         if self._backend == "qdrant":
@@ -364,7 +372,7 @@ class VectorStore:
         return sorted(docs)
 
     def delete_document(self, document_name: str) -> int:
-        """Delete all chunks for a specific document. Returns deleted count."""
+        \"\"\"Delete all chunks for a specific document. Returns deleted count.\"\"\"
         if self._backend == "qdrant":
             # First count how many points we will delete
             count_result = self._client.count(
@@ -394,7 +402,7 @@ class VectorStore:
         return len(ids)
 
     def get_document_info(self, document_name: str) -> dict:
-        """Return metadata summary for a specific document."""
+        \"\"\"Return metadata summary for a specific document.\"\"\"
         if self._backend == "qdrant":
             records, _ = self._client.scroll(
                 collection_name=self._collection_name,
@@ -457,7 +465,7 @@ class VectorStore:
         }
 
     def list_all_chunks(self) -> list[Chunk]:
-        """Load all chunks from the active vector store."""
+        \"\"\"Load all chunks from the active vector store.\"\"\"
         if self.count == 0:
             return []
 
@@ -538,3 +546,7 @@ def _retrieved_from_metadata(
         retrieval_source=retrieval_source,
         entity_matches=entity_matches,
     )
+"""
+
+with open(file_path, "w", encoding="utf-8") as f:
+    f.write(new_content)

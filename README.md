@@ -190,7 +190,7 @@ https://agenticragfullstack-production.up.railway.app/docs
 | Default LLM | `meta/llama-3.3-70b-instruct` |
 | Embedding model | `BAAI/bge-large-en-v1.5` via `sentence-transformers` |
 | Reranker | `cross-encoder/ms-marco-MiniLM-L-6-v2` |
-| Vector database | ChromaDB persistent local store |
+| Vector database | Qdrant Cloud (Cosine, 4096 dim) or ChromaDB |
 | Graph database | Neo4j |
 | Keyword search | BM25 using `rank-bm25` |
 | OCR | Native PDF extraction with PyMuPDF, PaddleOCR fallback, Tesseract fallback |
@@ -282,6 +282,10 @@ NVIDIA_TEMPERATURE=0.1
 
 GRAPH_BACKEND=neo4j
 
+VECTOR_DB=qdrant
+QDRANT_URL=https://your-qdrant-cluster-url.cloud.qdrant.io
+QDRANT_API_KEY=your-api-key
+QDRANT_COLLECTION=agentic-rag
 NEO4J_URI=neo4j+s://52f6fec6.databases.neo4j.io
 NEO4J_USERNAME=52f6fec6
 NEO4J_PASSWORD=7XcwEdmn1upF-Is02B7GiUgLVeq4lltV8Me33TTjkUc
@@ -299,6 +303,9 @@ CACHE_READY_PERCENT=100
 
 #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
 ```
+
+Qdrant Cloud setup:
+Create a Qdrant Cloud cluster and get your URL and API Key. The app will automatically create the `agentic-rag` collection configured for 4096 dimensions with Cosine distance and BM25 sparse vectors enabled.
 
 Neo4j is required because `GRAPH_BACKEND` is configured for Neo4j only. Redis is optional; if Redis is unavailable, the app falls back to in-memory and local disk caching where supported.
 
@@ -318,7 +325,7 @@ The compose file starts the FastAPI backend and Next.js frontend. Ensure require
 2. Configure `backend/.env` with your NVIDIA API key and model settings.
 3. Start the backend and frontend.
 4. Upload a PDF, scanned PDF, screenshot, or image.
-5. Wait for ingestion to complete: OCR/text extraction, chunking, entity abstraction, embeddings, ChromaDB insert, Neo4j graph insert, and BM25 rebuild.
+5. Wait for ingestion to complete: OCR/text extraction, chunking, entity abstraction, embeddings, Qdrant/ChromaDB insert, Neo4j graph insert, and BM25 rebuild.
 6. Ask questions from the frontend or `/query`.
 7. Review answer sources, confidence, and query classification.
 8. Run `/evaluate` to measure retrieval and grounding quality on the current corpus.
