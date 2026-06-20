@@ -57,12 +57,28 @@ export default function Home() {
   let toastId = useRef(0);
   let msgId = useRef(0);
 
+  const [isLoaded, setIsLoaded] = useState(false);
+
   // Load documents on mount
   useEffect(() => {
     const existing = window.localStorage.getItem('rag_session_id');
     const sessionId = existing || crypto.randomUUID();
     window.localStorage.setItem('rag_session_id', sessionId);
     sessionIdRef.current = sessionId;
+
+    const savedMsgs = window.localStorage.getItem('rag_chat_messages');
+    if (savedMsgs) {
+      try {
+        const parsed = JSON.parse(savedMsgs);
+        setMessages(parsed);
+        if (parsed.length > 0) {
+          msgId.current = Math.max(...parsed.map((m: any) => m.id));
+        }
+      } catch (e) {
+        console.error('Failed to load chat history', e);
+      }
+    }
+    setIsLoaded(true);
 
     api.listDocuments()
       .then(setDocuments)
@@ -82,6 +98,17 @@ export default function Home() {
     };
     checkCache();
   }, []);
+
+  // Save messages to local storage whenever they change
+  useEffect(() => {
+    if (!isLoaded) return;
+    const savableMessages = messages.filter(m => !m.thinking);
+    if (savableMessages.length > 0) {
+      window.localStorage.setItem('rag_chat_messages', JSON.stringify(savableMessages));
+    } else {
+      window.localStorage.removeItem('rag_chat_messages');
+    }
+  }, [messages, isLoaded]);
 
   // Auto-scroll chat
   useEffect(() => {
@@ -380,7 +407,7 @@ export default function Home() {
 
         {/* Chat Area */}
         <div className="chat-area" id="chat-area">
-          {messages.length === 0 ? (
+          {!isLoaded ? null : messages.length === 0 ? (
             <div className="welcome">
               <div className="welcome-glow">📄</div>
               <h2>Ask anything from your documents</h2>
