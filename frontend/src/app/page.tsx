@@ -99,16 +99,14 @@ export default function Home() {
     checkCache();
   }, []);
 
-  // Save messages to local storage whenever they change
-  useEffect(() => {
-    if (!isLoaded) return;
-    const savableMessages = messages.filter(m => !m.thinking);
+  const saveMessagesToStorage = (msgs: Message[]) => {
+    const savableMessages = msgs.filter(m => !m.thinking);
     if (savableMessages.length > 0) {
       window.localStorage.setItem('rag_chat_messages', JSON.stringify(savableMessages));
     } else {
       window.localStorage.removeItem('rag_chat_messages');
     }
-  }, [messages, isLoaded]);
+  };
 
   // Auto-scroll chat
   useEffect(() => {
@@ -130,12 +128,20 @@ export default function Home() {
 
   const addMessage = (msg: Omit<Message, 'id'>) => {
     const id = ++msgId.current;
-    setMessages(prev => [...prev, { ...msg, id }]);
+    setMessages(prev => {
+      const next = [...prev, { ...msg, id }];
+      saveMessagesToStorage(next);
+      return next;
+    });
     return id;
   };
 
   const updateMessage = (id: number, updates: Partial<Message>) => {
-    setMessages(prev => prev.map(m => m.id === id ? { ...m, ...updates } : m));
+    setMessages(prev => {
+      const next = prev.map(m => m.id === id ? { ...m, ...updates } : m);
+      saveMessagesToStorage(next);
+      return next;
+    });
   };
 
   // ── Stop handler ────────────────────────────────────────────────────────────
@@ -273,6 +279,7 @@ export default function Home() {
     try {
       await api.clearChat();
       setMessages([]);
+      window.localStorage.removeItem('rag_chat_messages');
       addToast('Chat history cleared', 'success');
     } catch (err: unknown) {
       addToast(`Failed to clear chat: ${err instanceof Error ? err.message : 'Unknown error'}`, 'error');
