@@ -53,6 +53,7 @@ export default function Home() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   // AbortController ref — holds the controller for the in-flight query
   const abortControllerRef = useRef<AbortController | null>(null);
+  const evalAbortControllerRef = useRef<AbortController | null>(null);
   const sessionIdRef = useRef<string>('');
   let toastId = useRef(0);
   let msgId = useRef(0);
@@ -238,17 +239,33 @@ export default function Home() {
   };
 
   const handleRunEval = async () => {
+    if (evalRunning) return;
     setEvalRunning(true);
     addToast(`Running evaluation with ${evalPairs} questions…`, 'info');
+    const controller = new AbortController();
+    evalAbortControllerRef.current = controller;
     try {
-      const report = await api.runEvaluation(evalPairs);
+      const report = await api.runEvaluation(evalPairs, controller.signal);
       setEvalReport(report);
     } catch (err: unknown) {
-      addToast(`Evaluation failed: ${err instanceof Error ? err.message : 'Unknown error'}`, 'error');
+      if (err instanceof Error && err.name === 'AbortError') {
+        addToast('Evaluation cancelled', 'info');
+      } else {
+        addToast(`Evaluation failed: ${err instanceof Error ? err.message : 'Unknown error'}`, 'error');
+      }
     } finally {
+      evalAbortControllerRef.current = null;
       setEvalRunning(false);
     }
   };
+
+  const handleStopEval = useCallback(() => {
+    if (evalAbortControllerRef.current) {
+      evalAbortControllerRef.current.abort();
+      evalAbortControllerRef.current = null;
+    }
+    setEvalRunning(false);
+  }, []);
 
   const handleExampleClick = (q: string) => {
     setQuestion(q);
@@ -338,12 +355,17 @@ export default function Home() {
           </div>
 
           <button
-            id="run-evaluation-btn"
+            id={evalRunning ? 'stop-evaluation-btn' : 'run-evaluation-btn'}
             className="eval-btn"
-            onClick={handleRunEval}
-            disabled={evalRunning || documents.length === 0}
+            onClick={evalRunning ? handleStopEval : handleRunEval}
+            disabled={!evalRunning && documents.length === 0}
+            style={evalRunning ? {
+              background: 'rgba(220,53,69,0.15)',
+              borderColor: 'rgba(220,53,69,0.4)',
+              color: '#ff6b7a',
+            } : undefined}
           >
-            {evalRunning ? `⏳ Generating ${evalPairs} questions…` : `📊 Run Evaluation (${evalPairs} Q&A)`}
+            {evalRunning ? `⏹ Stop Evaluation` : `📊 Run Evaluation (${evalPairs} Q&A)`}
           </button>
           <button
             id="reset-all-btn"

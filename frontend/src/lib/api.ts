@@ -178,8 +178,8 @@ export const api = {
     }),
 
   /** Run auto-evaluation. n_pairs controls how many Q&A pairs are generated (3–20). */
-  runEvaluation: (n_pairs: number = 10) =>
-    request<EvalReport>(`/evaluate?n_pairs=${n_pairs}`, { method: 'POST' }),
+  runEvaluation: (n_pairs: number = 10, signal?: AbortSignal) =>
+    request<EvalReport>(`/evaluate?n_pairs=${n_pairs}`, { method: 'POST', signal }),
 
   getCacheStatus: () => request<CacheStatus>('/cache/status'),
 
