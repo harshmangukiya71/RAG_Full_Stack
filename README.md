@@ -3,7 +3,7 @@
 ## Live Demo
 
 Frontend:
-https://agentic-rag-full-stack-31x3rxy8y.vercel.app/
+[https://agentic-rag-full-stack-31x3rxy8y.vercel.app/](https://agentic-rag-full-stack.vercel.app/)
 
 Backend API:
 https://agenticragfullstack-production.up.railway.app/docs
